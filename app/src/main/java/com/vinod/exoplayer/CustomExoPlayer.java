@@ -64,7 +64,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomExoPlayer extends AppCompatActivity implements AdEventListener, AdLoadListener, AdErrorListener, AdsMediaSource.MediaSourceFactory, View.OnClickListener {
+public class CustomExoPlayer extends AppCompatActivity implements AdEventListener, AdLoadListener, AdErrorListener, AdsMediaSource.MediaSourceFactory {
 
     SimpleExoPlayerView simpleExoPlayerView;
     SimpleExoPlayer simpleExoPlayer;
@@ -129,11 +129,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         defaultTimeBar = findViewById(R.id.exo_progress);
         exoDuration = findViewById(R.id.exo_duration);
         exoPos = findViewById(R.id.exo_position);
-
-
-        fwdIV.setOnClickListener(this);
-        bckwrdIV.setOnClickListener(this);
-
         linearLayoutManager = new LinearLayoutManager(this);
         adCallBacks.setLayoutManager(linearLayoutManager);
         adEventList = new ArrayList<>();
@@ -380,15 +375,4 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     }
 
 
-    @Override
-    public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.exo_ffwd:
-
-                break;
-            case R.id.exo_rew:
-
-                break;
-        }
-    }
 }
