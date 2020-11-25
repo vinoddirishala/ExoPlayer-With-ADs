@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+
+    <dimen name="thirtyFive">35dp</dimen>
+    <dimen name="twentyFive">25dp</dimen>
+
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context=".CustomExoPlayer">
+
+   <FrameLayout
+       android:layout_width="match_parent"
+       android:layout_height="wrap_content">
+
+       <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+           android:id="@+id/simpleExoPlayerView"
+           app:use_controller="true"
+           app:auto_show="true"
+           app:fastforward_increment="5000"
+           app:rewind_increment="5000"
+           android:layout_width="match_parent"
+           app:hide_on_touch="true"
+           app:show_buffering="always"
+           app:show_timeout="0"
+           app:hide_during_ads="false"
+           app:resize_mode="fill"
+           app:surface_type="surface_view"
+           app:controller_layout_id="@layout/custom_controls_exo"
+           android:layout_height="250dp"/>
+
+       <ProgressBar
+           android:id="@+id/progress_circular"
+           android:progressTint="@color/playedColor"
+           android:progressTintMode="add"
+           android:layout_gravity="center"
+           android:layout_width="45dp"
+           android:layout_height="45dp"/>
+
+
+
+   </FrameLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+
+        <Button
+            android:id="@+id/playPauseAd"
+            android:onClick="pauseAd"
+            android:text="Pause AD"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/adCallBacks"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+
+    </LinearLayout>
+
+</LinearLayout>
