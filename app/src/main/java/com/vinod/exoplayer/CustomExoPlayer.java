@@ -227,9 +227,12 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     private void initMadMan(){
         AdViewBinder adViewBinder = new AdViewBinder.Builder()
-                .setSkipViewId(R.id.skip_view)
-                .setClickThroughViewId(R.id.click_through)
+                .setSkipViewId(R.id.skipButton)
+                .setClickThroughViewId(R.id.learnMore)
+                .setAdCountDownViewId(R.id.countDownTimer)
                 .build(R.layout.ad_overlay);
+
+
         MadmanAdLoader.Builder builder=  new MadmanAdLoader.Builder(
                 this,
                 new DefaultNetworkLayer.Builder().build(this))
@@ -291,14 +294,18 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         adEventAdapter.notifyDataSetChanged();
         adCallBacks.scrollToPosition(adEventList.size()-1);
         // Manage ad pods and standalone ads playbacks here
-
-        int adPodCount = adEvent.getAdElement().getAdPod().getTotalAds();
-        Toast.makeText(this, ""+adPodCount, Toast.LENGTH_SHORT).show();
-
-        if (adEvent.getType().name().equalsIgnoreCase("COMPLETED") || adEvent.getType().name().equalsIgnoreCase("SKIPPED")){
-            showCustomControls();
-        }else if (adEvent.getType().name().equalsIgnoreCase("LOADED") || adEvent.getType().name().equalsIgnoreCase("STARTED")){
-            hideCustomControls();
+        if(adEvent.getAdElement().getAdPod().getTotalAds() <= 1){
+            if (adEvent.getType().name().equalsIgnoreCase("COMPLETED") || adEvent.getType().name().equalsIgnoreCase("SKIPPED")){
+                showCustomControls();
+            }else if (adEvent.getType().name().equalsIgnoreCase("LOADED") || adEvent.getType().name().equalsIgnoreCase("STARTED")){
+                hideCustomControls();
+            }
+        }else if (adEvent.getAdElement().getAdPod().getTotalAds() > 1){
+            if (adEvent.getType().name().equalsIgnoreCase("CONTENT_RESUME_REQUESTED") || adEvent.getType().name().equalsIgnoreCase("SKIPPED")){
+                showCustomControls();
+            }else if (adEvent.getType().name().equalsIgnoreCase("LOADED") || adEvent.getType().name().equalsIgnoreCase("STARTED")){
+                hideCustomControls();
+            }
         }
     }
 
