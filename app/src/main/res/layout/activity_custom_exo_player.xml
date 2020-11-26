@@ -16,6 +16,7 @@
            android:id="@+id/simpleExoPlayerView"
            app:use_controller="true"
            app:auto_show="true"
+           app:use_artwork="true"
            app:fastforward_increment="5000"
            app:rewind_increment="5000"
            android:layout_width="match_parent"

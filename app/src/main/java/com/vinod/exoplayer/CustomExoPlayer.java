@@ -290,6 +290,11 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         adEventAdapter.notifyItemInserted(adEventList.size()+1);
         adEventAdapter.notifyDataSetChanged();
         adCallBacks.scrollToPosition(adEventList.size()-1);
+        // Manage ad pods and standalone ads playbacks here
+
+        int adPodCount = adEvent.getAdElement().getAdPod().getTotalAds();
+        Toast.makeText(this, ""+adPodCount, Toast.LENGTH_SHORT).show();
+
         if (adEvent.getType().name().equalsIgnoreCase("COMPLETED") || adEvent.getType().name().equalsIgnoreCase("SKIPPED")){
             showCustomControls();
         }else if (adEvent.getType().name().equalsIgnoreCase("LOADED") || adEvent.getType().name().equalsIgnoreCase("STARTED")){
