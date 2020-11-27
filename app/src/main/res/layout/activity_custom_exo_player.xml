@@ -29,6 +29,7 @@
            app:controller_layout_id="@layout/custom_controls_exo"
            android:layout_height="250dp"/>
 
+
        <ProgressBar
            android:id="@+id/progress_circular"
            android:progressTint="@color/playedColor"
@@ -47,12 +48,35 @@
         android:layout_height="match_parent">
 
 
-        <Button
-            android:id="@+id/playPauseAd"
-            android:onClick="pauseAd"
-            android:text="Pause AD"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+      <LinearLayout
+          android:gravity="center"
+          android:orientation="horizontal"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content">
+          <Button
+              android:layout_weight="0.33"
+              android:id="@+id/playPauseAd"
+              android:onClick="pauseAd"
+              android:text="Play / Pause AD"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"/>
+
+          <Button
+              android:layout_weight="0.33"
+              android:onClick="changeSubTitle"
+              android:text="Change SubTitle"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"/>
+
+          <Button
+              android:layout_weight="0.33"
+              android:onClick="changeAudio"
+              android:text="Change Audio"
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"/>
+
+
+      </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/adCallBacks"

@@ -1,8 +1,10 @@
 package com.vinod.exoplayer;
 
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,6 +21,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -36,6 +39,7 @@ import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
@@ -43,6 +47,8 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MergingMediaSource;
+import com.google.android.exoplayer2.source.SingleSampleMediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.ads.AdsLoader;
 import com.google.android.exoplayer2.source.ads.AdsMediaSource;
@@ -51,6 +57,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.DefaultTimeBar;
@@ -58,6 +65,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
@@ -83,6 +91,9 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     ImageView bckwrdIV,fwdIV;
     DefaultTimeBar defaultTimeBar;
     TextView exoPos,exoDuration;
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,6 +140,7 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         defaultTimeBar = findViewById(R.id.exo_progress);
         exoDuration = findViewById(R.id.exo_duration);
         exoPos = findViewById(R.id.exo_position);
+
         linearLayoutManager = new LinearLayoutManager(this);
         adCallBacks.setLayoutManager(linearLayoutManager);
         adEventList = new ArrayList<>();
@@ -139,29 +151,26 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     }
 
     private void initExoPlayer(){
-
         BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         LoadControl loadControl = new DefaultLoadControl();
-        TrackSelector trackSelector = new DefaultTrackSelector(new AdaptiveTrackSelection.Factory(bandwidthMeter));
+
+        TrackSelection.Factory factory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
+
+
+        DefaultTrackSelector trackSelector = new DefaultTrackSelector(factory);
+
+        trackSelector.setParameters(new DefaultTrackSelector.ParametersBuilder()
+                .setRendererDisabled(C.TRACK_TYPE_TEXT,true)
+                .setRendererDisabled(C.TRACK_TYPE_VIDEO,false)
+                .build());
+
+
 
         simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(this,new DefaultRenderersFactory(this),trackSelector,loadControl);
         simpleExoPlayerView.setPlayer(simpleExoPlayer);
         madmanAdLoader.setPlayer(simpleExoPlayer);
 
-        MediaSource contentMediaSourceWithAds = new AdsMediaSource(buildMediaSource(Uri.parse(sampleUrl)), this, madmanAdLoader,
-                new AdsLoader.AdViewProvider() {
-                    @Override
-                    public ViewGroup getAdViewGroup() {
-                        return simpleExoPlayerView.getOverlayFrameLayout();
-                    }
-
-                    @Override
-                    public View[] getAdOverlayViews() {
-                        return new View[0];
-                    }
-                });
-
-        simpleExoPlayer.prepare(contentMediaSourceWithAds);
+        simpleExoPlayer.prepare(getContentMediaSourceWithAds(""));
         simpleExoPlayer.setPlayWhenReady(true);
 
 
@@ -224,6 +233,20 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         });
     }
 
+    private MediaSource getContentMediaSourceWithAds(String subTitleUrl){
+        return new AdsMediaSource(subTitleMediaSource(subTitleUrl), this, madmanAdLoader,
+                new AdsLoader.AdViewProvider() {
+                    @Override
+                    public ViewGroup getAdViewGroup() {
+                        return simpleExoPlayerView.getOverlayFrameLayout();
+                    }
+
+                    @Override
+                    public View[] getAdOverlayViews() {
+                        return new View[0];
+                    }
+                });
+    }
 
     private void initMadMan(){
         AdViewBinder adViewBinder = new AdViewBinder.Builder()
@@ -240,9 +263,23 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
                 .setAdEventListener(this)
                 .setAdLoadListener(this)
                 .setAdErrorListener(this);
-       // madmanAdLoader = builder.buildForAdUri(Uri.parse("http://13.58.41.117:8082/vast_ads_server.xml"));
-        madmanAdLoader = builder.buildForAdsResponse(readVampDataFromXML("ad_response.xml"));
+      //  madmanAdLoader = builder.buildForAdUri(Uri.parse("http://13.58.41.117:8082/ad_response.xml"));
+        madmanAdLoader = builder.buildForAdsResponse(readVampDataFromXML("pre_roll_vast.xml"));
         defaultDataSourceFactory = new DefaultDataSourceFactory(this,getString(R.string.app_name));
+    }
+
+    private MediaSource subTitleMediaSource(String subTitleUri){
+        if (subTitleUri == null || subTitleUri.equalsIgnoreCase("")){
+            return buildMediaSource(Uri.parse(sampleUrl));
+        }else {
+            Format subTitleFormat = Format.createTextSampleFormat(
+                    "1",
+                    MimeTypes.APPLICATION_SUBRIP,
+                    Format.NO_VALUE,
+                    "en");
+            MediaSource subTitleMediaSource = new SingleSampleMediaSource(Uri.parse(subTitleUri),defaultDataSourceFactory,subTitleFormat,C.TIME_UNSET);
+            return new MergingMediaSource(buildMediaSource(Uri.parse(sampleUrl)),subTitleMediaSource);
+        }
     }
 
 
@@ -286,7 +323,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
 
 
-
     @Override
     public void onAdEvent(AdEvent adEvent) {
         adEventList.add(adEvent);
@@ -294,7 +330,9 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         adEventAdapter.notifyDataSetChanged();
         adCallBacks.scrollToPosition(adEventList.size()-1);
         // Manage ad pods and standalone ads playbacks here
-        if(adEvent.getAdElement().getAdPod().getTotalAds() <= 1){
+
+
+      /*  if(adEvent.getAdElement().getAdPod().getTotalAds() <= 1){
             if (adEvent.getType().name().equalsIgnoreCase("COMPLETED") || adEvent.getType().name().equalsIgnoreCase("SKIPPED")){
                 showCustomControls();
             }else if (adEvent.getType().name().equalsIgnoreCase("LOADED") || adEvent.getType().name().equalsIgnoreCase("STARTED")){
@@ -306,7 +344,7 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
             }else if (adEvent.getType().name().equalsIgnoreCase("LOADED") || adEvent.getType().name().equalsIgnoreCase("STARTED")){
                 hideCustomControls();
             }
-        }
+        }*/
     }
 
 
@@ -386,5 +424,47 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     }
 
+
+    public void changeAudio(View view) {
+
+    }
+
+    public void changeSubTitle(View view) {
+        changeSubTitleAlert();
+    }
+
+
+    private void resetSubTitles(){
+        int windowIndex = simpleExoPlayer.getCurrentWindowIndex();
+    }
+
+
+
+    private void changeSubTitleAlert(){
+        String[] subtitleLanguages = {"Off","English","Telugu","Hindi"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true);
+        builder.setItems(subtitleLanguages, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (which == 0){
+                    simpleExoPlayer.seekTo(simpleExoPlayer.getContentPosition());
+                    simpleExoPlayer.prepare(getContentMediaSourceWithAds(""));
+                }else if (which == 1){
+                    simpleExoPlayer.seekTo(simpleExoPlayer.getContentPosition());
+                    simpleExoPlayer.prepare(getContentMediaSourceWithAds("http://www.storiesinflight.com/js_videosub/jellies.srt"));
+                }else if (which == 2){
+                    simpleExoPlayer.seekTo(simpleExoPlayer.getContentPosition());
+                    simpleExoPlayer.prepare(getContentMediaSourceWithAds("http://www.storiesinflight.com/js_videosub/jellies.srt"));
+                }else if (which == 3){
+
+                }
+                dialog.dismiss();
+            }
+
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
 }

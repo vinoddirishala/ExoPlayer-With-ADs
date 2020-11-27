@@ -32,9 +32,9 @@ public class AdEventAdapter extends RecyclerView.Adapter<AdEventAdapter.AdEventV
     @Override
     public void onBindViewHolder(@NonNull AdEventVewHolder holder, int position) {
         holder.adEventTV.setText(
-                        "AD Id: "+adEvents.get(position).getAdElement().getId().toString()+"\n"+
-                        "Duration : "+adEvents.get(position).getAdElement().getDuration()+"\n"+
-                        "Title : "+adEvents.get(position).getAdElement().getTitle()+"\n"+
+                       /* "AD Id: "+adEvents.get(position).getAdElement().getId().toString()+"\n"+*/
+                       /* "Duration : "+adEvents.get(position).getAdElement().getDuration()+"\n"+
+                        "Title : "+adEvents.get(position).getAdElement().getTitle()+"\n"+*/
                         "\n\n"+adEvents.get(position).getType().toString());
     }
 

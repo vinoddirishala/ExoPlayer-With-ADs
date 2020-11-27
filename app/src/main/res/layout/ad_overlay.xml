@@ -2,20 +2,40 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/skipButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
+    <LinearLayout
+        android:layout_marginBottom="@dimen/dp_12"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="@color/transparentBlack"
         android:layout_alignParentBottom="true"
-        android:layout_marginBottom="12dp"
-        android:background="#55000000"
-        android:padding="16dp"
-        android:textColor="#fff"
-        android:textSize="16sp"
-        android:visibility="gone" />
+        android:layout_alignParentRight="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:maxLines="2"
+            android:text="Skip ad"
+            android:padding="@dimen/dp_12"
+            android:id="@+id/skipButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/dp_12"
+            android:visibility="visible" />
+
+        <ImageView
+            android:layout_gravity="center"
+            app:tint="@color/white"
+            android:src="@drawable/ic_baseline_skip_next_24"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+
+    </LinearLayout>
 
 
     <LinearLayout
