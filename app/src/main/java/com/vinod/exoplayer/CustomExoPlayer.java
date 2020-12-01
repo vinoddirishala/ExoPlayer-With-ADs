@@ -49,6 +49,7 @@ import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
 import com.google.android.exoplayer2.source.SingleSampleMediaSource;
+import com.google.android.exoplayer2.source.TrackGroup;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.source.ads.AdsLoader;
 import com.google.android.exoplayer2.source.ads.AdsMediaSource;
@@ -57,6 +58,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
@@ -65,6 +67,7 @@ import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
@@ -77,10 +80,15 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     SimpleExoPlayerView simpleExoPlayerView;
     SimpleExoPlayer simpleExoPlayer;
     ProgressBar progress_circular;
-    private String sampleUrl = "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4";
+   // private String sampleUrl = "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4";
+    private String sampleUrl = "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
+ //   private String sampleUrl = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8";
 
     MadmanAdLoader madmanAdLoader;
     DefaultDataSourceFactory defaultDataSourceFactory;
+    DefaultTrackSelector trackSelector;
+    DefaultTrackSelector.Parameters parameters;
+    DefaultTrackSelector.ParametersBuilder builder;
 
     Button playPauseAd;
     RecyclerView adCallBacks;
@@ -92,7 +100,8 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     DefaultTimeBar defaultTimeBar;
     TextView exoPos,exoDuration;
 
-
+    ArrayList<String> supportedSubTitleLanguages;
+    ArrayList<String> supportedAudioLanguages;
 
 
     @Override
@@ -103,7 +112,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         initMadMan();
         initExoPlayer();
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -128,8 +136,10 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         return true;
     }
 
-
     private void initializeViews(){
+        supportedSubTitleLanguages = new ArrayList<>();
+        supportedAudioLanguages = new ArrayList<>();
+
         simpleExoPlayerView = findViewById(R.id.simpleExoPlayerView);
         progress_circular = findViewById(R.id.progress_circular);
         playPauseAd = findViewById(R.id.playPauseAd);
@@ -156,19 +166,16 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
         TrackSelection.Factory factory = new AdaptiveTrackSelection.Factory(bandwidthMeter);
 
-
-        DefaultTrackSelector trackSelector = new DefaultTrackSelector(factory);
-
-        trackSelector.setParameters(new DefaultTrackSelector.ParametersBuilder()
-                .setRendererDisabled(C.TRACK_TYPE_TEXT,true)
-                .setRendererDisabled(C.TRACK_TYPE_VIDEO,false)
-                .build());
+        trackSelector = new DefaultTrackSelector(factory);
+        parameters = trackSelector.getParameters();
+        builder = parameters.buildUpon();
 
 
 
         simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(this,new DefaultRenderersFactory(this),trackSelector,loadControl);
         simpleExoPlayerView.setPlayer(simpleExoPlayer);
         madmanAdLoader.setPlayer(simpleExoPlayer);
+
 
         simpleExoPlayer.prepare(getContentMediaSourceWithAds(""));
         simpleExoPlayer.setPlayWhenReady(true);
@@ -282,7 +289,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         }
     }
 
-
     public String readVampDataFromXML(String inFile) {
         String tContents = "";
         try {
@@ -297,7 +303,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         }
         return tContents;
     }
-
 
     private void hideCustomControls(){
         fwdIV.setVisibility(View.GONE);
@@ -321,8 +326,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         bckwrdIV.requestLayout();
     }
 
-
-
     @Override
     public void onAdEvent(AdEvent adEvent) {
         adEventList.add(adEvent);
@@ -330,7 +333,7 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         adEventAdapter.notifyDataSetChanged();
         adCallBacks.scrollToPosition(adEventList.size()-1);
         // Manage ad pods and standalone ads playbacks here
-
+      //  showCustomControls();
 
       /*  if(adEvent.getAdElement().getAdPod().getTotalAds() <= 1){
             if (adEvent.getType().name().equalsIgnoreCase("COMPLETED") || adEvent.getType().name().equalsIgnoreCase("SKIPPED")){
@@ -345,8 +348,8 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
                 hideCustomControls();
             }
         }*/
-    }
 
+    }
 
     @Override
     public void onAdManagerLoadFailed(AdErrorListener.AdError adError) {
@@ -424,7 +427,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     }
 
-
     public void changeAudio(View view) {
 
     }
@@ -433,12 +435,9 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         changeSubTitleAlert();
     }
 
-
     private void resetSubTitles(){
         int windowIndex = simpleExoPlayer.getCurrentWindowIndex();
     }
-
-
 
     private void changeSubTitleAlert(){
         String[] subtitleLanguages = {"Off","English","Telugu","Hindi"};
@@ -467,4 +466,56 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         dialog.show();
     }
 
+    public void fetchSubTitles(View view) {
+        // Subtitle's purpose
+        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        TrackGroupArray groupArray = mappedTrackInfo.getTrackGroups(1);
+        TrackSelectionArray currentTrackGroups = simpleExoPlayer.getCurrentTrackSelections();
+        TrackSelection currentTrackSelection = currentTrackGroups.get(1);
+        Log.d("Hi",currentTrackSelection.getSelectedFormat().label+" let's look");
+        Log.d("Hi",groupArray.get(0).getFormat(0).label+" is the first language...!");
+        for (int groupIndex = 0; groupIndex < groupArray.length; groupIndex++) {
+
+            TrackGroup group = groupArray.get(groupIndex);
+
+            Log.d("Hi",groupArray.length+"/"+group.length);
+
+
+            for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
+                Format trackFormat = group.getFormat(trackIndex);
+
+                supportedSubTitleLanguages.add(trackFormat.label == null ? "None":trackFormat.label);
+
+
+                Log.d("subtracks",group.length+"----"+trackFormat.label+" is the language label--"+groupIndex+"--"+trackIndex);
+
+
+                if(currentTrackSelection!=null && currentTrackSelection.getSelectedFormat()==trackFormat){
+                    //THIS ONE IS SELECTED
+                    Log.d("track:vinod","Selected track is "+trackFormat.toString()+"-/"+ trackFormat.label);
+
+                }else {
+                    Log.d("track:vinod","This is not selected track");
+                }
+            }
+        }
+        Log.d("4th Language is:;-",supportedSubTitleLanguages.get(3));
+
+
+        // setting selected sub title
+        for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
+            int trackType = mappedTrackInfo.getRendererType(rendererIndex);
+            Log.d("trackType",trackType+"'");
+            if (trackType == C.TRACK_TYPE_TEXT) {
+                Log.d("trackType","TRACK_TYPE_TEXT");
+                builder.clearSelectionOverrides(rendererIndex).setRendererDisabled(rendererIndex, false);
+               int groupIndex = 0;
+                int[] tracks = {0};
+                DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(groupIndex, tracks);
+                builder.setSelectionOverride(rendererIndex, mappedTrackInfo.getTrackGroups(rendererIndex), override);
+                Log.d("trackType","Override");
+            }
+        }
+        trackSelector.setParameters(builder);
+    }
 }
