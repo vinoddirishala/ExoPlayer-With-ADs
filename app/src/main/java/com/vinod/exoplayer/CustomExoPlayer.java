@@ -81,8 +81,13 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     SimpleExoPlayer simpleExoPlayer;
     ProgressBar progress_circular;
    // private String sampleUrl = "https://www.learningcontainer.com/wp-content/uploads/2020/05/sample-mp4-file.mp4";
-    private String sampleUrl = "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
+  //  private String sampleUrl = "https://bitmovin-a.akamaihd.net/content/sintel/hls/playlist.m3u8";
  //   private String sampleUrl = "https://bitdash-a.akamaihd.net/content/MI201109210084_1/m3u8s/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.m3u8";
+
+
+    private String sampleUrl = "http://13.58.41.117:8082/ban_mul_sub.mp4";
+    private String sampleUrl2 = "http://13.58.41.117:8082/test_ban_op.mp4";
+
 
     MadmanAdLoader madmanAdLoader;
     DefaultDataSourceFactory defaultDataSourceFactory;
@@ -102,6 +107,11 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     ArrayList<String> supportedSubTitleLanguages;
     ArrayList<String> supportedAudioLanguages;
+
+    MappingTrackSelector.MappedTrackInfo mappedTrackInfo ;
+    ArrayList<Track> tracks;
+
+
 
 
     @Override
@@ -160,7 +170,9 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         adCallBacks.setAdapter(adEventAdapter);
     }
 
-    private void initExoPlayer(){
+
+
+    private void initExoPlayer(){  
         BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
         LoadControl loadControl = new DefaultLoadControl();
 
@@ -169,6 +181,9 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         trackSelector = new DefaultTrackSelector(factory);
         parameters = trackSelector.getParameters();
         builder = parameters.buildUpon();
+
+        trackSelector.setRendererDisabled(2,true);
+        trackSelector.clearSelectionOverrides();
 
 
 
@@ -274,6 +289,7 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         madmanAdLoader = builder.buildForAdsResponse(readVampDataFromXML("pre_roll_vast.xml"));
         defaultDataSourceFactory = new DefaultDataSourceFactory(this,getString(R.string.app_name));
     }
+
 
     private MediaSource subTitleMediaSource(String subTitleUri){
         if (subTitleUri == null || subTitleUri.equalsIgnoreCase("")){
@@ -467,55 +483,29 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     }
 
     public void fetchSubTitles(View view) {
-        // Subtitle's purpose
-        MappingTrackSelector.MappedTrackInfo mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
-        TrackGroupArray groupArray = mappedTrackInfo.getTrackGroups(1);
-        TrackSelectionArray currentTrackGroups = simpleExoPlayer.getCurrentTrackSelections();
-        TrackSelection currentTrackSelection = currentTrackGroups.get(1);
-        Log.d("Hi",currentTrackSelection.getSelectedFormat().label+" let's look");
-        Log.d("Hi",groupArray.get(0).getFormat(0).label+" is the first language...!");
-        for (int groupIndex = 0; groupIndex < groupArray.length; groupIndex++) {
+        tracks = new ArrayList<Track>();
+        tracks.clear();
+        mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
+        TrackGroupArray textGroups = mappedTrackInfo.getTrackGroups(2);
+        for (int capLanguages = 0 ; capLanguages < textGroups.length ; capLanguages++){
+            TrackGroup trackGroup =  textGroups.get(capLanguages);
+            for (int formats =0 ; formats<textGroups.get(capLanguages).length; formats++){
 
-            TrackGroup group = groupArray.get(groupIndex);
+                String  languageCode =  trackGroup.getFormat(formats).language != null ?  trackGroup.getFormat(formats).language:"No languageCode";
+                String  labelCode =  trackGroup.getFormat(formats).label != null ?  trackGroup.getFormat(formats).label:"No label";
+                String  mimeType =  trackGroup.getFormat(formats).sampleMimeType != null ?  trackGroup.getFormat(formats).sampleMimeType:"No sampleMimeType";
+                String  trackID =  trackGroup.getFormat(formats).id != null ?  trackGroup.getFormat(formats).id:"No id";
 
-            Log.d("Hi",groupArray.length+"/"+group.length);
+                tracks.add(new Track(trackID,languageCode));
 
+                Log.d("Exo:Tracks",languageCode+"\n\n\n"+labelCode+"\n\n\n"+mimeType+"\n\n\n"+trackID);
 
-            for (int trackIndex = 0; trackIndex < group.length; trackIndex++) {
-                Format trackFormat = group.getFormat(trackIndex);
-
-                supportedSubTitleLanguages.add(trackFormat.label == null ? "None":trackFormat.label);
-
-
-                Log.d("subtracks",group.length+"----"+trackFormat.label+" is the language label--"+groupIndex+"--"+trackIndex);
-
-
-                if(currentTrackSelection!=null && currentTrackSelection.getSelectedFormat()==trackFormat){
-                    //THIS ONE IS SELECTED
-                    Log.d("track:vinod","Selected track is "+trackFormat.toString()+"-/"+ trackFormat.label);
-
-                }else {
-                    Log.d("track:vinod","This is not selected track");
-                }
             }
         }
-        Log.d("4th Language is:;-",supportedSubTitleLanguages.get(3));
+        Log.d("Exo:ListLength",tracks.size()+" is the length of text tracks");
 
+        BottomSheetDialog bottomSheetDialog =new BottomSheetDialog(this,tracks);
+        bottomSheetDialog.show(getSupportFragmentManager(),"VD");
 
-        // setting selected sub title
-        for (int rendererIndex = 0; rendererIndex < mappedTrackInfo.getRendererCount(); rendererIndex++) {
-            int trackType = mappedTrackInfo.getRendererType(rendererIndex);
-            Log.d("trackType",trackType+"'");
-            if (trackType == C.TRACK_TYPE_TEXT) {
-                Log.d("trackType","TRACK_TYPE_TEXT");
-                builder.clearSelectionOverrides(rendererIndex).setRendererDisabled(rendererIndex, false);
-               int groupIndex = 0;
-                int[] tracks = {0};
-                DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(groupIndex, tracks);
-                builder.setSelectionOverride(rendererIndex, mappedTrackInfo.getTrackGroups(rendererIndex), override);
-                Log.d("trackType","Override");
-            }
-        }
-        trackSelector.setParameters(builder);
     }
 }

@@ -46,4 +46,5 @@ dependencies {
     implementation "com.github.flipkart-incubator.madman-android:madman-okhttp-extension:$latest_version"
     implementation "com.github.flipkart-incubator.madman-android:madman-exoplayer-extension:$latest_version"
 
+
 }
