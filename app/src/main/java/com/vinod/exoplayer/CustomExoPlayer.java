@@ -486,10 +486,8 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         Log.d("Exo:SubClick",groupIndex+" groupIndex ID  "+groupIndexWithInTrack);
         Toast.makeText(this, "Selected "+track.getLanguageLabel(), Toast.LENGTH_SHORT).show();
         bottomSheetDialog.dismiss();
-
         int[] trackks = getTracksAdding(new DefaultTrackSelector.SelectionOverride(groupIndex, groupIndexWithInTrack), groupIndexWithInTrack);
         Log.d("Exo:Tracks",trackks.length+"++==="+trackks);
-
         builder.clearSelectionOverride(2,tracks).setRendererDisabled(2,false);
         builder.setPreferredTextLanguage(track.languageLabel);
         DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(groupIndex    ,groupIndexWithInTrack);
