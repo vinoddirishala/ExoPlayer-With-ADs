@@ -63,7 +63,7 @@
 
           <Button
               android:layout_weight="0.33"
-              android:onClick="changeSubTitle"
+              android:onClick="fetchSubTitles"
               android:text="Change SubTitle"
               android:layout_width="0dp"
               android:layout_height="wrap_content"/>
@@ -78,22 +78,6 @@
 
       </LinearLayout>
 
-        <LinearLayout
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <Button
-                android:layout_weight="0.33"
-                android:id="@+id/fetchSubTitles"
-                android:onClick="fetchSubTitles"
-                android:text="Fetch SubTitles"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"/>
-
-
-        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/adCallBacks"

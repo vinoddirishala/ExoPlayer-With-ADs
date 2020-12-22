@@ -58,6 +58,7 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
+import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
@@ -73,9 +74,10 @@ import com.google.android.exoplayer2.util.Util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-public class CustomExoPlayer extends AppCompatActivity implements AdEventListener, AdLoadListener, AdErrorListener, AdsMediaSource.MediaSourceFactory {
+public class CustomExoPlayer extends AppCompatActivity implements AdEventListener, AdLoadListener, AdErrorListener, AdsMediaSource.MediaSourceFactory, BottomSheetDialog.ItemClickListener {
 
     SimpleExoPlayerView simpleExoPlayerView;
     SimpleExoPlayer simpleExoPlayer;
@@ -110,6 +112,7 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     MappingTrackSelector.MappedTrackInfo mappedTrackInfo ;
     ArrayList<Track> tracks;
+    BottomSheetDialog bottomSheetDialog;
 
 
 
@@ -182,17 +185,14 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         parameters = trackSelector.getParameters();
         builder = parameters.buildUpon();
 
-        trackSelector.setRendererDisabled(2,true);
-        trackSelector.clearSelectionOverrides();
-
-
-
         simpleExoPlayer = ExoPlayerFactory.newSimpleInstance(this,new DefaultRenderersFactory(this),trackSelector,loadControl);
         simpleExoPlayerView.setPlayer(simpleExoPlayer);
         madmanAdLoader.setPlayer(simpleExoPlayer);
 
 
-        simpleExoPlayer.prepare(getContentMediaSourceWithAds(""));
+       // simpleExoPlayer.prepare(buildMediaSource(Uri.parse(sampleUrl)));
+
+       simpleExoPlayer.prepare(getContentMediaSourceWithAds(""));
         simpleExoPlayer.setPlayWhenReady(true);
 
 
@@ -374,7 +374,7 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     @Override
     public void onAdManagerLoaded(AdManager adManager) {
-        hideCustomControls();
+      //  hideCustomControls();
     }
 
     @Override
@@ -447,39 +447,8 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
 
     }
 
-    public void changeSubTitle(View view) {
-        changeSubTitleAlert();
-    }
-
     private void resetSubTitles(){
         int windowIndex = simpleExoPlayer.getCurrentWindowIndex();
-    }
-
-    private void changeSubTitleAlert(){
-        String[] subtitleLanguages = {"Off","English","Telugu","Hindi"};
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setCancelable(true);
-        builder.setItems(subtitleLanguages, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                if (which == 0){
-                    simpleExoPlayer.seekTo(simpleExoPlayer.getContentPosition());
-                    simpleExoPlayer.prepare(getContentMediaSourceWithAds(""));
-                }else if (which == 1){
-                    simpleExoPlayer.seekTo(simpleExoPlayer.getContentPosition());
-                    simpleExoPlayer.prepare(getContentMediaSourceWithAds("http://www.storiesinflight.com/js_videosub/jellies.srt"));
-                }else if (which == 2){
-                    simpleExoPlayer.seekTo(simpleExoPlayer.getContentPosition());
-                    simpleExoPlayer.prepare(getContentMediaSourceWithAds("http://www.storiesinflight.com/js_videosub/jellies.srt"));
-                }else if (which == 3){
-
-                }
-                dialog.dismiss();
-            }
-
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
     }
 
     public void fetchSubTitles(View view) {
@@ -487,25 +456,66 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         tracks.clear();
         mappedTrackInfo = trackSelector.getCurrentMappedTrackInfo();
         TrackGroupArray textGroups = mappedTrackInfo.getTrackGroups(2);
+
         for (int capLanguages = 0 ; capLanguages < textGroups.length ; capLanguages++){
             TrackGroup trackGroup =  textGroups.get(capLanguages);
             for (int formats =0 ; formats<textGroups.get(capLanguages).length; formats++){
+
+                Log.d("Exo:loops",""+formats+" \n\n "+capLanguages);
 
                 String  languageCode =  trackGroup.getFormat(formats).language != null ?  trackGroup.getFormat(formats).language:"No languageCode";
                 String  labelCode =  trackGroup.getFormat(formats).label != null ?  trackGroup.getFormat(formats).label:"No label";
                 String  mimeType =  trackGroup.getFormat(formats).sampleMimeType != null ?  trackGroup.getFormat(formats).sampleMimeType:"No sampleMimeType";
                 String  trackID =  trackGroup.getFormat(formats).id != null ?  trackGroup.getFormat(formats).id:"No id";
 
-                tracks.add(new Track(trackID,languageCode));
+                tracks.add(new Track(capLanguages,formats,trackID,languageCode,textGroups));
 
                 Log.d("Exo:Tracks",languageCode+"\n\n\n"+labelCode+"\n\n\n"+mimeType+"\n\n\n"+trackID);
-
             }
         }
         Log.d("Exo:ListLength",tracks.size()+" is the length of text tracks");
 
-        BottomSheetDialog bottomSheetDialog =new BottomSheetDialog(this,tracks);
+
+        bottomSheetDialog =new BottomSheetDialog(this,tracks);
         bottomSheetDialog.show(getSupportFragmentManager(),"VD");
+    }
+
+
+    @Override
+    public void onItemClick(int groupIndex,int groupIndexWithInTrack,int indexOfTrack,Track track,TrackGroupArray tracks) {
+        Log.d("Exo:SubClick",groupIndex+" groupIndex ID  "+groupIndexWithInTrack);
+        Toast.makeText(this, "Selected "+track.getLanguageLabel(), Toast.LENGTH_SHORT).show();
+        bottomSheetDialog.dismiss();
+
+        int[] trackks = getTracksAdding(new DefaultTrackSelector.SelectionOverride(groupIndex, groupIndexWithInTrack), groupIndexWithInTrack);
+        Log.d("Exo:Tracks",trackks.length+"++==="+trackks);
+
+        builder.clearSelectionOverride(2,tracks).setRendererDisabled(2,false);
+        builder.setPreferredTextLanguage(track.languageLabel);
+        DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(groupIndex    ,groupIndexWithInTrack);
+        builder.setSelectionOverride(2, mappedTrackInfo.getTrackGroups(2), override);
+        trackSelector.setParameters(builder);
+    }
+
+
+    @Override
+    public void onCCTurnedOffSelected(TrackGroupArray tracks) {
+        bottomSheetDialog.dismiss();
+        Toast.makeText(this, "Turned Off", Toast.LENGTH_SHORT).show();
+        builder.clearSelectionOverride(2,tracks).setRendererDisabled(2,true);
+        builder.setPreferredTextLanguage(null);
+        trackSelector.setParameters(builder);
 
     }
+
+
+
+    private static int[] getTracksAdding(DefaultTrackSelector.SelectionOverride override, int addedTrack) {
+        int[] tracks = override.tracks;
+        tracks = Arrays.copyOf(tracks, tracks.length + 1);
+        tracks[tracks.length - 1] = addedTrack;
+        return tracks;
+    }
+
+
 }

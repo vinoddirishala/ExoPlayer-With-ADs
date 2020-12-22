@@ -12,6 +12,7 @@ import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     String[] tracksStringArray;
     ItemClickListener mListener;
 
+
     public BottomSheetDialog(Context mContext,ArrayList<Track> list) {
         this.mContext = mContext;
         this.tracks = list;
@@ -33,7 +35,8 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     }
 
     private String[] getTracksLabels(){
-        tracksStringArray = new String[]{tracks.get(0).languageLabel,tracks.get(1).languageLabel};
+        tracksStringArray = new String[]{"Off",tracks.get(0).languageLabel,tracks.get(1).languageLabel};
+        tracks.add(0,new Track(0,0,"Off","Turn Off",new TrackGroupArray()));
         return tracksStringArray;
     }
 
@@ -55,9 +58,9 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position == 0){
-                    
-                }else if (position == 1){
-
+                    mListener.onCCTurnedOffSelected(tracks.get(position).tracks);
+                }else {
+                    mListener.onItemClick(tracks.get(position).groupIndex,tracks.get(position).groupIndexWithinTrack,position-1,tracks.get(position),tracks.get(position).tracks);
                 }
             }
         });
@@ -81,7 +84,8 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     }
 
     public interface ItemClickListener{
-        void onItemClick(Track track);
+        void onItemClick(int groupIndex,int groupIndexWithInTrack,int posOfSubTitle,Track track,TrackGroupArray tracks);
+        void onCCTurnedOffSelected(TrackGroupArray trackGroupArray);
     }
 
 }
