@@ -9,6 +9,7 @@ android {
     defaultConfig {
         applicationId "com.vinod.exoplayer"
         minSdkVersion 17
+        multiDexEnabled true
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
@@ -45,6 +46,12 @@ dependencies {
     implementation "com.github.flipkart-incubator.madman-android:madman:$latest_version"
     implementation "com.github.flipkart-incubator.madman-android:madman-okhttp-extension:$latest_version"
     implementation "com.github.flipkart-incubator.madman-android:madman-exoplayer-extension:$latest_version"
+
+    // ChromeCast SDK
+    implementation 'com.google.android.gms:play-services-cast-framework:19.0.0'
+    implementation 'com.android.support:mediarouter-v7:27.1.1'
+    // Notification MediaStyle Purpose
+    implementation "androidx.media:media:1.2.0"
 
 
 }

@@ -1,17 +1,12 @@
 package com.vinod.exoplayer;
 
-import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -21,11 +16,11 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.flipkart.madman.exo.extension.MadmanAdLoader;
 import com.flipkart.madman.listener.AdErrorListener;
 import com.flipkart.madman.listener.AdEventListener;
@@ -58,19 +53,17 @@ import com.google.android.exoplayer2.source.hls.HlsMediaSource;
 import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.trackselection.FixedTrackSelection;
 import com.google.android.exoplayer2.trackselection.MappingTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelection;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.SimpleExoPlayerView;
 import com.google.android.exoplayer2.upstream.BandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.MimeTypes;
 import com.google.android.exoplayer2.util.Util;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -486,11 +479,9 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         Log.d("Exo:SubClick",groupIndex+" groupIndex ID  "+groupIndexWithInTrack);
         Toast.makeText(this, "Selected "+track.getLanguageLabel(), Toast.LENGTH_SHORT).show();
         bottomSheetDialog.dismiss();
-        int[] trackks = getTracksAdding(new DefaultTrackSelector.SelectionOverride(groupIndex, groupIndexWithInTrack), groupIndexWithInTrack);
-        Log.d("Exo:Tracks",trackks.length+"++==="+trackks);
         builder.clearSelectionOverride(2,tracks).setRendererDisabled(2,false);
         builder.setPreferredTextLanguage(track.languageLabel);
-        DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(groupIndex    ,groupIndexWithInTrack);
+        DefaultTrackSelector.SelectionOverride override = new DefaultTrackSelector.SelectionOverride(groupIndex,groupIndexWithInTrack);
         builder.setSelectionOverride(2, mappedTrackInfo.getTrackGroups(2), override);
         trackSelector.setParameters(builder);
     }
