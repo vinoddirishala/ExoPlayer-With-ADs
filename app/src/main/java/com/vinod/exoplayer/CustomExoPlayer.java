@@ -83,7 +83,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     private String sampleUrl = "http://13.58.41.117:8082/ban_mul_sub.mp4";
     private String sampleUrl2 = "http://13.58.41.117:8082/test_ban_op.mp4";
 
-
     MadmanAdLoader madmanAdLoader;
     DefaultDataSourceFactory defaultDataSourceFactory;
     DefaultTrackSelector trackSelector;
@@ -106,9 +105,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
     MappingTrackSelector.MappedTrackInfo mappedTrackInfo ;
     ArrayList<Track> tracks;
     BottomSheetDialog bottomSheetDialog;
-
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -165,8 +161,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         adCallBacks.addItemDecoration(new DividerItemDecoration(this,linearLayoutManager.getOrientation()));
         adCallBacks.setAdapter(adEventAdapter);
     }
-
-
 
     private void initExoPlayer(){  
         BandwidthMeter bandwidthMeter = new DefaultBandwidthMeter();
@@ -282,7 +276,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         madmanAdLoader = builder.buildForAdsResponse(readVampDataFromXML("pre_roll_vast.xml"));
         defaultDataSourceFactory = new DefaultDataSourceFactory(this,getString(R.string.app_name));
     }
-
 
     private MediaSource subTitleMediaSource(String subTitleUri){
         if (subTitleUri == null || subTitleUri.equalsIgnoreCase("")){
@@ -473,7 +466,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         bottomSheetDialog.show(getSupportFragmentManager(),"VD");
     }
 
-
     @Override
     public void onItemClick(int groupIndex,int groupIndexWithInTrack,int indexOfTrack,Track track,TrackGroupArray tracks) {
         Log.d("Exo:SubClick",groupIndex+" groupIndex ID  "+groupIndexWithInTrack);
@@ -486,7 +478,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         trackSelector.setParameters(builder);
     }
 
-
     @Override
     public void onCCTurnedOffSelected(TrackGroupArray tracks) {
         bottomSheetDialog.dismiss();
@@ -496,8 +487,6 @@ public class CustomExoPlayer extends AppCompatActivity implements AdEventListene
         trackSelector.setParameters(builder);
 
     }
-
-
 
     private static int[] getTracksAdding(DefaultTrackSelector.SelectionOverride override, int addedTrack) {
         int[] tracks = override.tracks;
